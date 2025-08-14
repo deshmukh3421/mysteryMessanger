@@ -97,7 +97,7 @@ const page = () => {
                 />
               </FormControl>
               {isCheckingUsername && <Loader2Icon className="animate-spin"/>}
-              <p className={`text-sm ${usernameMessage === "Username is unique" ? 'text-green-500' : 'text-red-500'}`}>test {usernameMessage}</p>
+              <p className={`text-sm ${usernameMessage === "Username is unique" ? 'text-green-500' : 'text-red-500'}`}>{usernameMessage}</p>
               <FormMessage />
             </FormItem>
           )}
@@ -147,7 +147,7 @@ const page = () => {
         <p>
           Already a member?{''}
           <br/>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <Link href="/sign-in" className="text-blue-600 hover:text-blue-800">
             SignIn
           </Link>
         </p>
