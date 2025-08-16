@@ -1,5 +1,5 @@
 "use client";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 import { Message } from "@/model/User";
 import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import { ApiResponse } from "@/types/ApiResponse";
@@ -21,8 +21,7 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const [profileUrl, setProfileUrl] = useState("");
-  const [userData, setUserData] = useState<any>(null);
-  const [acceptMessagesState, setAcceptMessagesState] = useState<boolean>(true); // default ON
+  const [acceptMessagesState, setAcceptMessagesState] = useState<boolean>(true);
 
   const { data: session, status } = useSession();
   const user: User = session?.user as User;
@@ -31,6 +30,7 @@ const Page = () => {
   const form = useForm({ resolver: zodResolver(acceptMessageSchema) });
   const { setValue } = form;
 
+  // Generate profile link
   useEffect(() => {
     if (typeof window !== "undefined" && session?.user?.username) {
       const baseUrl = `${window.location.protocol}//${window.location.host}`;
@@ -38,13 +38,18 @@ const Page = () => {
     }
   }, [session?.user?.username]);
 
+  // Fetch accept/reject state
   const fetchAcceptMessages = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
       const response = await axios.get<ApiResponse>("/api/accept-messages");
-      const isAccepting = response.data.isAcceptingMessage ?? true; // default true
-      setAcceptMessagesState(isAccepting);
-      setValue("acceptMessages", isAccepting);
+      if (response.data.success) {
+        const isAccepting = response.data.isAcceptingMessage ?? true;
+        setAcceptMessagesState(isAccepting);
+        setValue("acceptMessages", isAccepting);
+      } else {
+        toast.error(response.data.message || "Failed to fetch message settings");
+      }
     } catch (error) {
       toast.error("Failed to fetch message settings");
     } finally {
@@ -52,22 +57,25 @@ const Page = () => {
     }
   }, [setValue]);
 
+  // Fetch messages
   const fetchMessages = useCallback(async (refresh: boolean = false) => {
     setIsLoading(true);
-    setIsSwitchLoading(false);
     try {
-      const response = await axios.get<ApiResponse>("/api/get-messages");
-      setMessages(response.data.messages || []);
-      setUserData(response.data.user || null);
+      const response = await axios.get<ApiResponse>("/api/get-message");
+      console.log("get-messages response:", response.data); // debug
 
-      if (refresh) {
-        toast("Refresh Messages", { description: "Showing latest messages" });
+      if (response.data.success) {
+        setMessages(response.data.messages || []);
+        if (refresh) {
+          toast("Refreshed Messages", { description: "Showing latest messages" });
+        }
+      } else {
+        toast.error(response.data.message || "Failed to fetch messages");
       }
     } catch (error) {
       toast.error("Failed to fetch messages");
     } finally {
       setIsLoading(false);
-      setIsSwitchLoading(false);
     }
   }, []);
 
@@ -83,9 +91,13 @@ const Page = () => {
       const response = await axios.post<ApiResponse>("/api/accept-messages", {
         acceptMessages: newValue,
       });
-      setAcceptMessagesState(newValue);
-      setValue("acceptMessages", newValue);
-      toast.success(response.data.message);
+      if (response.data.success) {
+        setAcceptMessagesState(newValue);
+        setValue("acceptMessages", newValue);
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message || "Failed to update status");
+      }
     } catch (error) {
       toast.error("Failed to update Accepting Message status");
     }
@@ -99,13 +111,13 @@ const Page = () => {
     if (profileUrl) {
       navigator.clipboard.writeText(profileUrl);
       toast.success("Profile URL has been copied to clipboard");
+      router.push(profileUrl);
     }
   };
 
-  // ---- Redirect unauthenticated users ----
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/"); 
+      router.push("/");
     }
   }, [status, router]);
 
@@ -118,14 +130,14 @@ const Page = () => {
   }
 
   if (!session || !session.user) {
-    return null; 
+    return null;
   }
 
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-white rounded w-full max-w-6xl">
       <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
 
-      {/* Copy Link Section */}
+      {/* Profile Link */}
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>
         <div className="flex items-center">
@@ -139,18 +151,20 @@ const Page = () => {
         </div>
       </div>
 
-      {/* Accept Messages Switch */}
+      {/* Switch */}
       <div className="mb-4">
         <Switch
           checked={acceptMessagesState}
           onCheckedChange={handleSwitchChange}
           disabled={isSwitchLoading}
         />
-        <span className="ml-2">Accept Messages: {acceptMessagesState ? "On" : "Off"}</span>
+        <span className="ml-2">
+          Accept Messages: {acceptMessagesState ? "On" : "Off"}
+        </span>
       </div>
       <Separator />
 
-      {/* Refresh Messages Button */}
+      {/* Refresh */}
       <Button
         className="mt-4"
         variant="outline"
@@ -167,35 +181,19 @@ const Page = () => {
       </Button>
 
       {/* Messages */}
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {messages.length > 0 ? (
-          messages.map((message, index) => (
-            <MessageCard key={index} message={message} onMessageDelete={handleDeleteMessage} />
+          messages.map((message) => (
+            <MessageCard
+              key={message._id as string}
+              message={message}
+              onMessageDelete={handleDeleteMessage}
+            />
           ))
-        ) : userData ? (
-          <div className="p-4 border rounded shadow bg-gray-50">
-            <h2 className="text-lg font-bold mb-2">User Info</h2>
-            <p><strong>ID:</strong> {userData._id}</p>
-            <p><strong>Username:</strong> {userData.username}</p>
-            <p><strong>Email:</strong> {userData.email}</p>
-            <p><strong>Verified:</strong> {userData.isVerified ? "Yes" : "No"}</p>
-            <p><strong>Accepting Messages:</strong> {userData.isAcceptingMessage ? "Yes" : "No"}</p>
-
-            <h3 className="text-md font-semibold mt-3">Messages</h3>
-            {userData.messages && userData.messages.length > 0 ? (
-              <ul className="list-disc ml-5">
-                {userData.messages.map((msg: any) => (
-                  <li key={msg._id}>
-                    <strong>{new Date(msg.createdAt).toLocaleString()}:</strong> {msg.content}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No messages in DB.</p>
-            )}
-          </div>
         ) : (
-          <p>No messages to display.</p>
+          <div className="col-span-full text-center text-gray-500 py-12 bg-gray-50 rounded-lg">
+            No messages yet. Share your link and start receiving messages!
+          </div>
         )}
       </div>
     </div>

@@ -1,78 +1,35 @@
 "use client";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "./ui/button";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Message } from "@/model/User";
-import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
-import { toast } from "sonner"; // ✅ new sonner toast
 
-type MessageCardProps = {
+interface MessageCardProps {
   message: Message;
-  onMessageDelete: (messageId: string) => void;
-};
+  onMessageDelete: (id: string) => void;
+}
 
-const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
-  const handleDeleteConfirm = async () => {
-    onMessageDelete(message._id as string);
-    try {
-      const response = await axios.delete<ApiResponse>(
-        `api/delete-message/${message._id}`
-      );
-      if (response.status === 200) {
-        toast.success("Message deleted Successfully"); // ✅ success toast
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      const errorMessage = axiosError?.response?.data?.message;
-      toast.error(errorMessage || "Failed to delete message"); // ✅ error toast
-    }
-  };
-
+const MessageCard: React.FC<MessageCardProps> = ({ message, onMessageDelete }) => {
   return (
-    <Card>
-      <CardHeader>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <div className="w-full flex justify-end">
-              <Button variant="destructive" className="w-fit">
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove your data from our servers.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+    <Card className="shadow-md rounded-2xl border border-gray-200 hover:shadow-lg transition">
+      <CardHeader className="flex justify-between items-center pb-2">
+        <span className="text-sm text-gray-500">
+          {new Date(message.createdAt || "").toLocaleString()}
+        </span>
+        <Button
+          size="icon"
+          variant="destructive"
+          className="rounded-full h-8 w-8"
+          onClick={() => onMessageDelete(message._id as string)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </CardHeader>
-      <CardContent>{message.content}</CardContent>
+      <CardContent>
+        <p className="text-gray-900 text-base leading-relaxed">
+          {message.content}
+        </p>
+      </CardContent>
     </Card>
   );
 };
