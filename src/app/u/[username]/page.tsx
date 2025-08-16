@@ -10,18 +10,18 @@ import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner"; // ✅ new toaster
+import { toast } from "sonner"; 
 
 const Page = () => {
   const params = useParams();
   const schema = z.object({
     message: z.string().min(1, "Message should not be empty"),
   });
+
   const [messages, setMessages] = useState<string[]>([]);
   const [acceptConditionError, setAcceptConditionError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [suggestMessageLoader, setSuggestMessageLoader] =
-    useState<boolean>(false);
+  const [suggestMessageLoader, setSuggestMessageLoader] = useState<boolean>(false);
 
   const { data: session } = useSession();
 
@@ -46,12 +46,16 @@ const Page = () => {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const isAcceptingMessagesStatus = await axios.get("/api/accept-messages");
+      const isAcceptingMessagesStatus = await axios.get(
+        `/api/accept-messages?username=${params.username}`
+      );
+      
 
       if (isAcceptingMessagesStatus?.data?.isAcceptingMessages === true) {
         await axios.post("/api/send-message", {
           username: params.username,
           content: data.message,
+          sender: session?.user?.email || null,
         });
 
         toast.success("Message Sent Successfully ✅");
@@ -134,6 +138,7 @@ const Page = () => {
           </Button>
         </div>
       </form>
+
       <div className="my-8">
         <Button onClick={() => suggestMessageFunction()}>
           {suggestMessageLoader ? (

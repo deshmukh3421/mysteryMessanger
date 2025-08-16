@@ -1,8 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface Message extends Document {
+export interface Message {
+  _id: string;
   content: string;
   createdAt: Date;
+  sender?: string | null; // optional
 }
 
 const MessageSchema: Schema<Message> = new Schema({
@@ -14,6 +16,11 @@ const MessageSchema: Schema<Message> = new Schema({
     type: Date,
     required: true,
     default: Date.now,
+  },
+  sender: {
+    type: String,
+    required: false,
+    default: null,
   },
 });
 
