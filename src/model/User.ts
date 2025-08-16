@@ -1,10 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Message {
-  _id: string;
+  _id?: string; // 👈 optional because mongoose auto-generates it
   content: string;
   createdAt: Date;
-  sender?: string | null; // optional
+  sender?: string | null;
 }
 
 const MessageSchema: Schema<Message> = new Schema({
@@ -14,12 +14,11 @@ const MessageSchema: Schema<Message> = new Schema({
   },
   createdAt: {
     type: Date,
-    required: true,
     default: Date.now,
+    required: true,
   },
   sender: {
     type: String,
-    required: false,
     default: null,
   },
 });
@@ -62,7 +61,7 @@ const UserSchema: Schema<User> = new Schema({
   },
   isVerified: {
     type: Boolean,
-    required: [true, "IsVerified is required"],
+    required: true,
     default: false,
   },
   isAcceptingMessage: {
