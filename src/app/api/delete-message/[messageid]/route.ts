@@ -1,4 +1,3 @@
-// src/app/api/delete-message/[messageid]/route.ts
 import UserModel from "@/model/User";
 import { getServerSession } from "next-auth/next";
 import dbConnect from "@/lib/dbConnect";
@@ -6,19 +5,8 @@ import { User } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-// Proper named type for the route context — Next.js 15 requires this style
-interface DeleteMessageContext {
-  params: {
-    messageid: string;
-  };
-}
-
-export async function DELETE(
-  request: NextRequest,
-  context: DeleteMessageContext
-) {
-  const { messageid } = context.params;
-
+export async function DELETE(request: NextRequest, { params }: any) {
+  const { messageid } = params;
   await dbConnect();
 
   const session = await getServerSession(authOptions);
