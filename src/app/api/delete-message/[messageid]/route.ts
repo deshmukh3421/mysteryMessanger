@@ -5,7 +5,6 @@ import { User } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-// Define the correct type for route context
 interface DeleteMessageContext {
   params: {
     messageid: string;
