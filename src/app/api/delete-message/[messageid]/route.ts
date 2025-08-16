@@ -2,12 +2,19 @@ import UserModel from "@/model/User";
 import { getServerSession } from "next-auth/next";
 import dbConnect from "@/lib/dbConnect";
 import { User } from "next-auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
+// Define the correct type for route context
+interface DeleteMessageContext {
+  params: {
+    messageid: string;
+  };
+}
+
 export async function DELETE(
-  request: Request,
-  context: { params: { messageid: string } }
+  request: NextRequest,
+  context: DeleteMessageContext
 ) {
   const { messageid } = context.params;
 
