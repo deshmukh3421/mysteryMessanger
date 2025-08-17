@@ -1,3 +1,7 @@
+## See it in Action
+
+This video demonstrates the functionality of our website. You can see how users can interact with the site and how the different features work.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
