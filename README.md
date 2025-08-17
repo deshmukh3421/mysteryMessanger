@@ -2,6 +2,8 @@
 
 This video demonstrates the functionality of our website. You can see how users can interact with the site and how the different features work.
 
+https://github.com/user-attachments/assets/a2f763e2-0486-49c3-8f7b-1e5855666ce3
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
